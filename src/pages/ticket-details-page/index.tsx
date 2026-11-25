@@ -10,8 +10,9 @@
  * fields and the internal notes for a client user, so there is no second copy
  * of this screen to keep in step.
  */
-import React, { useCallback, useState } from "react";
-import { Alert, Icon, Spin, Tabs } from "antd";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, Spin } from "antd";
+
 import { useParams } from "react-router-dom";
 import {
   Flex,
@@ -27,6 +28,8 @@ import ConversationView from "./partials/ConversationView";
 import ActionsBar from "./partials/ActionsBar";
 import HistoryView from "./partials/HistoryView";
 import { TicketPayloadType } from "./index.interface";
+import Icon from "../../components/icon";
+import Tabs from "../../components/tabs";
 
 const EMPTY: TicketPayloadType = {
   data: [],
@@ -61,14 +64,28 @@ const TicketDetailsPage = () => {
     runQuery({ ticket_id: ticketId });
   }, [runQuery, ticketId]);
 
+  // 24-11-2026 NEW    : another ticket number in the address loads that ticket
+  // REASON : the screen stays mounted when only :ticketId changes (back / forward between
+  //          two tickets), so it kept showing the first ticket while the actions used the new number
+  // BENEFIT: the ticket shown is always the ticket in the address
+  const shownIdRef = useRef(ticketId);
+  useEffect(() => {
+    if (shownIdRef.current === ticketId) {
+      return;
+    }
+    shownIdRef.current = ticketId;
+    setPayload(EMPTY);
+    runQuery({ ticket_id: ticketId });
+  }, [ticketId, runQuery]);
+
   const ticket = payload.data[0];
 
   if (loading && !ticket) {
-    return <Spin tip={labels("loading")} />;
+    return <Spin description={labels("loading")} />;
   }
 
   if (!ticket) {
-    return <Alert type="warning" message={labels("noData")} showIcon />;
+    return <Alert type="warning" title={labels("noData")} showIcon />;
   }
 
   return (
@@ -90,25 +107,33 @@ const TicketDetailsPage = () => {
           showIcon
           icon={<Icon type="eye" />}
           style={{ marginBottom: 12 }}
-          message={payload.other_viewers
+          title={payload.other_viewers
             .map((viewer) => viewer.user_name)
             .join(", ")}
         />
       ) : null}
 
-      <Flex align="flex-start" gap={14}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <ShadowSection>
-            <ActionsBar
-              ticket={ticket}
-              nextStatuses={payload.next_statuses}
-              isStaff={staff}
-              isSupervisorOrManagement={!!supervisorOrManagement}
-              onDone={reload}
-            />
-          </ShadowSection>
+      {/* 24-11-2026 OLD: no wrap, minWidth 0 - on a narrow window the conversation shrank
+          to one word per line next to the 300px properties panel
+          NEW: wrap, the conversation keeps at least 320px and the panel goes under it */}
+      <Flex align="flex-start" gap={14} wrap>
+        <div style={{ flex: 1, minWidth: 320 }}>
+          {/* 24-11-2026 (v2.2.2) OLD: the actions card was always drawn
+              NEW: only when it has a button (staff, or a client with a next status)
+              REASON: a client saw an empty white card above the conversation */}
+          {staff || payload.next_statuses.length ? (
+            <ShadowSection style={{ marginBottom: 12 }}>
+              <ActionsBar
+                ticket={ticket}
+                nextStatuses={payload.next_statuses}
+                isStaff={staff}
+                isSupervisorOrManagement={!!supervisorOrManagement}
+                onDone={reload}
+              />
+            </ShadowSection>
+          ) : null}
 
-          <ShadowSection style={{ marginTop: 12 }}>
+          <ShadowSection>
             <Tabs defaultActiveKey="conversation">
               <Tabs.TabPane
                 tab={labels("conversation")}
@@ -134,6 +159,18 @@ const TicketDetailsPage = () => {
                   isStaff={staff}
                   canWrite={ticket.open_flag !== "N"}
                   onSent={reload}
+                  // 24-11-2026 (v2.2.2) NEW: no "Reply to client" on an internal task
+                  internal={ticket.internal_flag === "Y"}
+                  // 24-11-2026 NEW: the canned reply {placeholders} (see ConversationView)
+                  fillValues={{
+                    name: ticket.created_by_name,
+                    ticket: ticket.ticket_id,
+                    ticket_id: ticket.ticket_id,
+                    client: ticket.client_name,
+                    branch: ticket.branch_name,
+                    module: ticket.module_name,
+                    title: ticket.title,
+                  }}
                 />
               </Tabs.TabPane>
 
@@ -146,7 +183,8 @@ const TicketDetailsPage = () => {
           </ShadowSection>
         </div>
 
-        <PropertiesView ticket={ticket} isStaff={staff} />
+        {/* 23-11-2026: onChanged - the problem link reloads the ticket */}
+        <PropertiesView ticket={ticket} isStaff={staff} onChanged={reload} />
       </Flex>
     </>
   );

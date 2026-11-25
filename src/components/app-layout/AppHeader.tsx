@@ -13,9 +13,9 @@
  *            Behaviour (bell refresh every minute, logout) is unchanged.
  */
 import React, { useCallback, useEffect, useState } from "react";
-import { Avatar, Badge, Dropdown, Icon, Menu, Tooltip } from "antd";
+import { Avatar, Badge, Dropdown, Tooltip } from "antd";
 import styled from "styled-components";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useBasicMutation, useBasicQuery } from "../../hooks";
 import { isStaffUser, useAppConfig } from "../../store";
 import { useLabels } from "../../labels";
@@ -23,6 +23,7 @@ import { useThemeMode, THEME_MODES } from "../../theme";
 import { PAGES_PATH_NAMES } from "../../routes/constants";
 import ExsysLogo from "../exsys-logo";
 import LanguageSelect from "../language-select";
+import Icon, { icon } from "../icon";
 
 const Bar = styled.div`
   height: 62px;
@@ -129,7 +130,7 @@ const UserBox = styled.span`
 
 const AppHeader = () => {
   const labels = useLabels();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { user, clearSession } = useAppConfig();
   const { mode, setMode } = useThemeMode();
   const [unread, setUnread] = useState(0);
@@ -170,57 +171,71 @@ const AppHeader = () => {
       : user.client_name || ""
     : "";
 
-  const userMenu = (
-    <Menu>
-      <Menu.Item
-        key="change-password"
-        onClick={() => history.push(PAGES_PATH_NAMES.changePassword)}
-      >
-        <Icon type="lock" /> {labels("changePassword")}
-      </Menu.Item>
-      <Menu.Item key="logout" onClick={onLogout}>
-        <Icon type="logout" /> {labels("logout")}
-      </Menu.Item>
-    </Menu>
-  );
+  // 23-11-2026 (antd 6): the user menu is given as items (OLD: <Menu> children in "overlay")
+  const userMenu = {
+    items: [
+      {
+        key: "change-password",
+        icon: <Icon type="lock" />,
+        label: labels("changePassword"),
+        onClick: () => navigate(PAGES_PATH_NAMES.changePassword),
+      },
+      {
+        key: "logout",
+        icon: <Icon type="logout" />,
+        label: labels("logout"),
+        onClick: onLogout,
+      },
+    ],
+  };
 
   return (
     <Bar>
-      <Brand onClick={() => history.push("/")}>
+      <Brand onClick={() => navigate("/")}>
         <ExsysLogo height={32} />
         <BrandDivider />
         <BrandName>{labels("appName")}</BrandName>
       </Brand>
 
       <Right>
-        {staff ? (
-          <Tooltip title={labels("notifications")}>
-            <Badge count={unread} overflowCount={99} offset={[-4, 4]}>
-              <RoundButton
-                onClick={() => history.push(PAGES_PATH_NAMES.notifications)}
-              >
-                <Icon type="bell" />
-              </RoundButton>
-            </Badge>
-          </Tooltip>
-        ) : null}
+        {/* 24-11-2026 (v2.2.2)
+            OLD    : the bell was drawn for staff only ({staff ? .. : null})
+            NEW    : every user gets it; a client goes to /portal/notifications
+            REASON : the server already keeps notifications for client users (a reply,
+                     a solved ticket) but the client had no bell and no screen to read them
+            BENEFIT: the client knows there is a reply without opening every ticket */}
+        <Tooltip title={labels("notifications")}>
+          <Badge count={unread} overflowCount={99} offset={[-4, 4]}>
+            <RoundButton
+              onClick={() =>
+                navigate(
+                  staff
+                    ? PAGES_PATH_NAMES.notifications
+                    : PAGES_PATH_NAMES.clientNotifications,
+                )
+              }
+            >
+              <Icon type="bell" />
+            </RoundButton>
+          </Badge>
+        </Tooltip>
 
         <RoundButton
           onClick={() =>
             setMode(isDark ? THEME_MODES.LIGHT : THEME_MODES.DARK)
           }
         >
-          <Icon type="bulb" theme={isDark ? "filled" : "outlined"} />
+          <Icon type={isDark ? "bulb-filled" : "bulb"} />
         </RoundButton>
 
         {/* 23-11-2026: the active languages of ETK_LANGUAGE (was: ع / EN) */}
         <LanguageSelect width={130} round />
 
-        <Dropdown overlay={userMenu} trigger={["click"]}>
+        <Dropdown menu={userMenu} trigger={["click"]}>
           <UserBox>
             <Avatar
               size={30}
-              icon="user"
+              icon={icon("user")}
               style={{ background: "#006fbb", flexShrink: 0 }}
             />
             <span className="user-lines">

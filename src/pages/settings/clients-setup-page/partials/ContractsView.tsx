@@ -6,24 +6,15 @@
  * and the supervisor is told.
  */
 import React, { useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Icon,
-  Input,
-  Modal,
-  Popconfirm,
-  Select,
-  Tag,
-  message,
-} from "antd";
-import moment from "moment";
+import { Button, DatePicker, Input, Modal, Popconfirm, Select, Tag, message } from "antd";
+import dayjs, { Dayjs } from "dayjs";
 import { useTheme } from "styled-components";
 import { Flex } from "../../../../components/commons";
 import ExsysTable from "../../../../components/exsys-table";
 import { useBasicMutation } from "../../../../hooks";
 import { useLabels } from "../../../../labels";
 import { ContractType } from "../index.interface";
+import Icon from "../../../../components/icon";
 
 interface Props {
   clientId: number;
@@ -106,7 +97,7 @@ const ContractsView = ({ clientId, contracts, levels, onReload }: Props) => {
       />
 
       <Modal
-        visible={!!editing}
+        open={!!editing}
         title={labels("contracts")}
         confirmLoading={loading}
         okText={labels("save")}
@@ -149,7 +140,7 @@ const ContractsView = ({ clientId, contracts, levels, onReload }: Props) => {
                 format={DATE_FORMAT}
                 value={
                   editing.start_date
-                    ? moment(editing.start_date, DATE_FORMAT)
+                    ? dayjs(editing.start_date, DATE_FORMAT)
                     : undefined
                 }
                 onChange={(date) =>
@@ -165,7 +156,7 @@ const ContractsView = ({ clientId, contracts, levels, onReload }: Props) => {
                 format={DATE_FORMAT}
                 value={
                   editing.end_date
-                    ? moment(editing.end_date, DATE_FORMAT)
+                    ? dayjs(editing.end_date, DATE_FORMAT)
                     : undefined
                 }
                 onChange={(date) =>

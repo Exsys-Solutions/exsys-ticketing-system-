@@ -21,7 +21,7 @@
  *            Cure+. The sign-in logic itself is unchanged.
  */
 import React, { useCallback, useState } from "react";
-import { Alert, Button, Form, Icon, Input } from "antd";
+import { Alert, Button, Form, Input } from "antd";
 import styled from "styled-components";
 import { useBasicMutation } from "../../hooks";
 import { useAppConfig, CurrentUserType } from "../../store";
@@ -29,6 +29,7 @@ import { useLabels } from "../../labels";
 import ExsysLogo from "../../components/exsys-logo";
 import AppFooter from "../../components/app-layout/AppFooter";
 import LanguageSelect from "../../components/language-select";
+import Icon from "../../components/icon";
 
 const Page = styled.div`
   height: 100vh;
@@ -211,8 +212,8 @@ const LoginPage = () => {
   });
 
   const onSubmit = useCallback(
-    async (event: React.FormEvent) => {
-      event.preventDefault();
+    // 23-11-2026 (antd 6): called by Form onFinish (no event); OLD: Form onSubmit(event)
+    async () => {
       setError("");
 
       const { apiValues, error: apiError } = await mutate({
@@ -278,7 +279,7 @@ const LoginPage = () => {
           {error ? (
             <Alert
               type="error"
-              message={error}
+              title={error}
               style={{ marginBottom: 14, borderRadius: 12 }}
               showIcon
             />
@@ -289,7 +290,7 @@ const LoginPage = () => {
             <LanguageSelect width={200} round />
           </LangRow>
 
-          <Form onSubmit={onSubmit}>
+          <Form onFinish={onSubmit}>
             <Form.Item>
               <Input
                 prefix={<Icon type="user" />}

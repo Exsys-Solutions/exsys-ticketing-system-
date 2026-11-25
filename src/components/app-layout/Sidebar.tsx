@@ -4,13 +4,14 @@
  * agents see their own queue, clients get the portal menu).
  */
 import React from "react";
-import { Badge, Icon, Menu } from "antd";
+import { Badge, Menu } from "antd";
 import styled from "styled-components";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PAGES_PATH_NAMES } from "../../routes/constants";
 import { isManagement, isStaffUser, useAppConfig } from "../../store";
 import { useLabels } from "../../labels";
 import { useRequestRights } from "../../hooks";
+import Icon from "../icon";
 
 /*
  * 23-11-2026 - new look (same idea as the Cure+ side menu):
@@ -83,7 +84,7 @@ const Side = styled.div`
 `;
 
 const Sidebar = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const labels = useLabels();
   const { user } = useAppConfig();
@@ -158,8 +159,29 @@ const Sidebar = () => {
           icon: "team",
           label: labels("clients"),
         },
+        // 23-11-2026 (script ETKT_13)
+        { key: PAGES_PATH_NAMES.guide, icon: "book", label: labels("guide") },
+        {
+          key: PAGES_PATH_NAMES.problems,
+          icon: "warning",
+          label: labels("problems"),
+        },
+        {
+          key: PAGES_PATH_NAMES.faq,
+          icon: "question-circle",
+          label: labels("faq"),
+        },
+        // 24-11-2026 (script ETKT_15)
+        { key: PAGES_PATH_NAMES.reports, icon: "printer", label: labels("reports") },
       ]
     : [
+        // 23-11-2026 (script ETKT_14): the client portal opens on its home
+        { key: PAGES_PATH_NAMES.clientHome, icon: "dashboard", label: labels("home") },
+        {
+          key: PAGES_PATH_NAMES.clientDashboard,
+          icon: "bar-chart",
+          label: labels("statistics"),
+        },
         {
           key: PAGES_PATH_NAMES.clientMyTickets,
           icon: "profile",
@@ -169,6 +191,20 @@ const Sidebar = () => {
           key: PAGES_PATH_NAMES.clientNewTicket,
           icon: "plus-circle",
           label: labels("newTicket"),
+        },
+        // 24-11-2026 (v2.2.2) NEW: notifications in the client menu (was staff only)
+        {
+          key: PAGES_PATH_NAMES.clientNotifications,
+          icon: "bell",
+          label: labels("notifications"),
+        },
+        // 24-11-2026 (script ETKT_15)
+        { key: PAGES_PATH_NAMES.clientReports, icon: "printer", label: labels("reports") },
+        // 23-11-2026 (script ETKT_13): the published guide of the client's modules
+        {
+          key: PAGES_PATH_NAMES.clientFaq,
+          icon: "question-circle",
+          label: labels("faq"),
         },
         // only the client manager gets this item (ETK_USER.CLIENT_ADMIN_FLAG)
         ...(rights.can_request_flag === "Y"
@@ -191,40 +227,40 @@ const Sidebar = () => {
 
   return (
     <Side>
+      {/* 23-11-2026 (antd 6): the menu is given as items (OLD: <Menu.Item> children) */}
       <Menu
         mode="inline"
         selectedKeys={selected ? [selected] : []}
-        onClick={({ key }) => history.push(key)}
-      >
-        {items.map((item) => (
-          <Menu.Item key={item.key}>
-            <Icon type={item.icon} />
-            <span>{item.label}</span>
-          </Menu.Item>
-        ))}
-
-        {setupItems.length ? (
-          <Menu.SubMenu
-            key="setup"
-            title={
-              <span>
-                <Icon type="setting" />
-                <span>{labels("setup")}</span>
-              </span>
-            }
-          >
-            {setupItems.map((item: any) => (
-              <Menu.Item key={item.key}>
-                <Icon type={item.icon} />
-                <span>{item.label}</span>
-                {item.badge ? (
-                  <Badge count={item.badge} style={{ marginInlineStart: 8 }} />
-                ) : null}
-              </Menu.Item>
-            ))}
-          </Menu.SubMenu>
-        ) : null}
-      </Menu>
+        onClick={({ key }) => navigate(key)}
+        items={[
+          ...items.map((item) => ({
+            key: item.key,
+            icon: <Icon type={item.icon} />,
+            label: item.label,
+          })),
+          ...(setupItems.length
+            ? [
+                {
+                  key: "setup",
+                  icon: <Icon type="setting" />,
+                  label: labels("setup"),
+                  children: setupItems.map((item: any) => ({
+                    key: item.key,
+                    icon: <Icon type={item.icon} />,
+                    label: (
+                      <>
+                        {item.label}
+                        {item.badge ? (
+                          <Badge count={item.badge} style={{ marginInlineStart: 8 }} />
+                        ) : null}
+                      </>
+                    ),
+                  })),
+                },
+              ]
+            : []),
+        ]}
+      />
     </Side>
   );
 };

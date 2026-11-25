@@ -8,12 +8,12 @@ but it follows the same conventions so the team reads it without a handover.
 
 | Item | Value |
 |---|---|
-| React | 16.13 |
-| TypeScript | 3.7 |
-| UI kit | Ant Design **v3** (3.19.3) |
-| Styling | styled-components 5 + the `app-theme` color tokens (light / dark) |
-| Router | react-router-dom 5 |
-| Build | CRA 3.4.1 customized with `react-app-rewired` (`config-overrides.js`) |
+| React | 19 |
+| TypeScript | 5.9 |
+| UI kit | Ant Design **v6** |
+| Styling | styled-components 6 + the `app-theme` color tokens (light / dark) |
+| Router | react-router-dom 7 |
+| Build | Vite 8 (`vite.config.ts`); env vars keep the `REACT_APP_` prefix |
 | Data | `useBasicQuery` / `useBasicMutation` over an `apiId` - screens never write a URL |
 | Errors | one field, `error_message`, in the caller's `planguageid` |
 
@@ -23,14 +23,12 @@ Difference: this is a single app, not a Lerna monorepo. The folder layout inside
 
 ## Run
 
-Use **yarn (v1)**, not npm: the `@types` versions are pinned in `resolutions`
-(newer ones do not parse under TypeScript 3.7) and npm ignores that block.
-Use the same Node version as cure-plus-fe (same CRA 3.4.1 tooling).
+Node >= 20.19 and npm.
 
 ```
-yarn install
-yarn start      # http://localhost:3000
-yarn build
+npm install
+npm start       # http://localhost:3000
+npm run build   # type-check + production build into ./build
 ```
 
 `.env` (create it by hand, it is not in the repo) points at ORDS:

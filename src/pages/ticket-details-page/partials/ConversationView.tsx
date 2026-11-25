@@ -6,12 +6,15 @@
  * out of the payload, not the screen.
  */
 import React, { useCallback, useState } from "react";
-import { Button, Icon, Select, Tabs, message as antMessage } from "antd";
+import { Button, Select, message as antMessage } from "antd";
+
 import styled, { useTheme } from "styled-components";
 import { Flex, SubText } from "../../../components/commons";
 import { useBasicMutation, useLookups } from "../../../hooks";
 import { useLabels } from "../../../labels";
 import { MessageType } from "../index.interface";
+import Icon from "../../../components/icon";
+import Tabs from "../../../components/tabs";
 
 const Bubble = styled.div<{ internal?: boolean; mine?: boolean }>`
   border: 1px solid
@@ -32,7 +35,23 @@ interface Props {
   isStaff: boolean;
   canWrite: boolean;
   onSent: () => void;
+  // 24-11-2026 NEW: values for the {placeholders} of a canned reply
+  fillValues?: { [key: string]: string | number | undefined };
+  // 24-11-2026 (v2.2.2) NEW: an internal task has no client to reply to
+  internal?: boolean;
 }
+
+// 24-11-2026 NEW    : fills {name}, {ticket}, {client} ... of a canned reply
+// REASON : the canned replies say "مرحبا {name}" and the text was sent to the client as it is
+// BENEFIT: the client reads his own name, not "{name}"; an unknown {word} is left untouched
+const fillCanned = (
+  text: string,
+  values?: { [key: string]: string | number | undefined },
+) =>
+  text.replace(/\{(\w+)\}/g, (all, key: string) => {
+    const value = values ? values[key.toLowerCase()] : undefined;
+    return value === undefined || value === null || value === "" ? all : String(value);
+  });
 
 const ConversationView = ({
   ticketId,
@@ -40,11 +59,14 @@ const ConversationView = ({
   isStaff,
   canWrite,
   onSent,
+  fillValues,
+  internal,
 }: Props) => {
   const labels = useLabels();
   const theme = useTheme();
   const { lookups } = useLookups();
-  const [tab, setTab] = useState("client");
+  // OLD: useState("client")  NEW: an internal task opens on (and only has) the note tab
+  const [tab, setTab] = useState(internal ? "internal" : "client");
   const [body, setBody] = useState("");
 
   const { loading, mutate } = useBasicMutation({ apiId: "message" });
@@ -86,7 +108,9 @@ const ConversationView = ({
             </strong>
             <SubText>{item.message_date}</SubText>
           </Flex>
-          <div>{item.body}</div>
+          {/* 23-11-2026: dir="auto" - an Arabic message on the English screen (and the
+              reverse) reads in its own direction (review of v2.0.0 live) */}
+          <div dir="auto">{item.body}</div>
           {item.ai_article_id ? (
             <SubText>article #{item.ai_article_id}</SubText>
           ) : null}
@@ -99,16 +123,20 @@ const ConversationView = ({
         <div style={{ marginTop: 14 }}>
           <Tabs activeKey={tab} onChange={setTab} size="small">
             {/* 23-11-2026 OLD: the client also read "Reply to client"  NEW: "Reply" for the client */}
-            <Tabs.TabPane
-              tab={isStaff ? labels("reply") : labels("clientReply")}
-              key="client"
-            />
+            {/* 24-11-2026 (v2.2.2) OLD: "Reply to client" was shown on internal tasks too
+                NEW: hidden there. REASON: there is no client on an internal task */}
+            {internal ? null : (
+              <Tabs.TabPane
+                tab={isStaff ? labels("reply") : labels("clientReply")}
+                key="client"
+              />
+            )}
             {isStaff ? (
               <Tabs.TabPane tab={labels("internalNote")} key="internal" />
             ) : null}
           </Tabs>
 
-          {isStaff && lookups.canned_replies.length ? (
+          {isStaff && !internal && lookups.canned_replies.length ? (
             <Select
               showSearch
               optionFilterProp="children"
@@ -119,7 +147,8 @@ const ConversationView = ({
                   (reply) => String(reply.key) === String(key),
                 );
                 if (found) {
-                  setBody(found.body || found.value);
+                  // 24-11-2026 OLD: setBody(found.body || found.value)  NEW: placeholders filled first
+                  setBody(fillCanned(found.body || found.value, fillValues));
                 }
               }}
             >

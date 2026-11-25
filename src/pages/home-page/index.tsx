@@ -8,7 +8,7 @@
  * arrives, this file is the only one that changes.
  */
 import React, { useCallback, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Spin } from "antd";
 import {
   Flex,
@@ -34,7 +34,7 @@ const BOXES = [
 
 const HomePage = () => {
   const labels = useLabels();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { authorization, languageId, user } = useAppConfig();
   const [counts, setCounts] = useState<{ [view: string]: number }>({});
   const [loading, setLoading] = useState(false);
@@ -88,7 +88,7 @@ const HomePage = () => {
           {BOXES.map((box) => (
             <StatBox
               key={box.view}
-              onClick={() => history.push(PAGES_PATH_NAMES.tickets)}
+              onClick={() => navigate(PAGES_PATH_NAMES.tickets)}
               style={{ cursor: "pointer" }}
             >
               <SubText>{labels(box.labelKey as any)}</SubText>

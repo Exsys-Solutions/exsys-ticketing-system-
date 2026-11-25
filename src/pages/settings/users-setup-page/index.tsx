@@ -10,23 +10,14 @@
  * service sets "must change on next login" and drops the user's open sessions.
  */
 import React, { useCallback, useState } from "react";
-import {
-  Button,
-  Icon,
-  Input,
-  Modal,
-  Popconfirm,
-  Select,
-  Switch,
-  Tag,
-  message,
-} from "antd";
-import { ColumnProps } from "antd/lib/table";
+import { Button, Input, Modal, Popconfirm, Select, Switch, Tag, message } from "antd";
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
 import ExsysTable from "../../../components/exsys-table";
 import { useBasicMutation, useBasicQuery, useLookups } from "../../../hooks";
 import { useLabels, useLanguages } from "../../../labels";
+import Icon from "../../../components/icon";
 
 const PAGE_SIZE = 25;
 
@@ -117,8 +108,12 @@ const UsersSetupPage = () => {
     }
 
     const { error } = await saveUser({
-      record_status: editing.user_id ? "u" : "n",
+      // 24-11-2026 OLD: record_status first, then the spread of the GET row
+      // NEW   : the spread first, record_status last
+      // REASON: every GET row carries record_status "q"; the spread wrote "q" over "u" and the save failed
+      // BENEFIT: editing a saved record works again
       ...editing,
+      record_status: editing.user_id ? "u" : "n",
     });
 
     if (error) {
@@ -274,7 +269,7 @@ const UsersSetupPage = () => {
       </ShadowSection>
 
       <Modal
-        visible={!!editing}
+        open={!!editing}
         width={720}
         title={labels("setupUsers")}
         confirmLoading={saving}
@@ -502,7 +497,7 @@ const UsersSetupPage = () => {
       </Modal>
 
       <Modal
-        visible={!!resetting}
+        open={!!resetting}
         title={labels("resetPassword")}
         okText={labels("save")}
         cancelText={labels("cancel")}

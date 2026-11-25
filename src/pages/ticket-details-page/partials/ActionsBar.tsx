@@ -9,20 +9,12 @@
  * new status or a new mandatory field is data, not a code change here.
  */
 import React, { useCallback, useMemo, useState } from "react";
-import {
-  Button,
-  Icon,
-  Input,
-  InputNumber,
-  Modal,
-  Rate,
-  Select,
-  message as antMessage,
-} from "antd";
+import { Button, Input, InputNumber, Modal, Rate, Select, message as antMessage } from "antd";
 import { Flex } from "../../../components/commons";
 import { useBasicMutation, useLookups } from "../../../hooks";
 import { useLabels } from "../../../labels";
 import { TicketType } from "../index.interface";
+import Icon from "../../../components/icon";
 
 type ActionKind =
   | "status"
@@ -146,6 +138,30 @@ const ActionsBar = ({
               />
             );
           })}
+
+          {/* 24-11-2026 NEW    : a client who accepts (A) or rejects (R) the solution gives
+              a rating 1..5 and an optional comment
+              REASON : the server requires the rating (ETK_TICKET_PKG, not in ETK_STATUS_FIELD),
+                       the screen had no field for it, so a client could never accept or reject
+              BENEFIT: the client closes the loop on a solved ticket */}
+          {!isStaff && (form.to_status === "A" || form.to_status === "R") ? (
+            <>
+              <div style={{ marginBottom: 4 }}>{labels("rating")} *</div>
+              <Rate
+                value={form.rating}
+                onChange={(value) => setForm({ ...form, rating: value })}
+                style={{ marginBottom: 12 }}
+              />
+              <Input.TextArea
+                rows={3}
+                placeholder={labels("clientComment")}
+                value={form.client_comment || ""}
+                onChange={(event) =>
+                  setForm({ ...form, client_comment: event.target.value })
+                }
+              />
+            </>
+          ) : null}
         </>
       );
     }
@@ -297,7 +313,7 @@ const ActionsBar = ({
       </Flex>
 
       <Modal
-        visible={!!kind}
+        open={!!kind}
         title={kind ? labels(kind === "status" ? "changeStatus" : (kind as any)) : ""}
         confirmLoading={loading}
         onCancel={() => {

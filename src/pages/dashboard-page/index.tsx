@@ -17,8 +17,8 @@
  */
 import React, { useCallback, useMemo, useState } from "react";
 import { DatePicker, Radio, Select, Spin, Tag } from "antd";
-import { ColumnProps } from "antd/lib/table";
-import moment from "moment";
+import type { ColumnType as ColumnProps } from "antd/es/table";
+import dayjs, { Dayjs } from "dayjs";
 import { useTheme } from "styled-components";
 import {
   Flex,
@@ -30,9 +30,11 @@ import {
 } from "../../components/commons";
 import ExsysTable from "../../components/exsys-table";
 import { useBasicQuery, useLookups } from "../../hooks";
+import { useSessionRange, useSessionState } from "../../hooks/useSessionState";
 import { isManagement, isSupervisor, useAppConfig } from "../../store";
 import { useLabels } from "../../labels";
 import ChartsView from "./partials/ChartsView";
+import CompanyAnalysis from "./partials/CompanyAnalysis";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
@@ -90,17 +92,26 @@ const DashboardPage = () => {
   const management = !!user && isManagement(user);
   const firstScope = management ? "company" : "me";
   const [payload, setPayload] = useState<PayloadType>(EMPTY);
-  const [scope, setScope] = useState(firstScope);
-  const [teamId, setTeamId] = useState<number | undefined>(undefined);
-  const [period, setPeriod] = useState("30");
-  const [range, setRange] = useState<[moment.Moment, moment.Moment]>([
-    moment().subtract(29, "days"),
-    moment(),
+  // 24-11-2026 OLD: useState(firstScope) / useState(undefined) / useState("30") / useState([today-29, today])
+  // NEW: kept in sessionStorage. REASON: a language change put the filters back to the default.
+  // BENEFIT: scope, team, period and range stay when the user changes the language.
+  const [scope, setScope] = useSessionState<string>("dash-scope", firstScope);
+  const [teamId, setTeamId] = useSessionState<number | undefined>("dash-team", undefined);
+  const [period, setPeriod] = useSessionState<string>("dash-period", "30");
+  const [range, setRange] = useSessionRange("dash-range", () => [
+    dayjs().subtract(29, "days"),
+    dayjs(),
   ]);
 
   const { loading, runQuery } = useBasicQuery<PayloadType>({
     apiId: "dashboard",
-    params: { scope: firstScope },
+    // 24-11-2026 OLD: params: { scope: firstScope }  NEW: the kept filters
+    params: {
+      scope,
+      from_date: range[0].format(DATE_FORMAT),
+      to_date: range[1].format(DATE_FORMAT),
+      team_id: scope === "company" ? teamId : undefined,
+    },
     callOnFirstRender: true,
     onResponse: ({ apiValues, error }) => {
       setPayload(!error && apiValues ? { ...EMPTY, ...apiValues } : EMPTY);
@@ -110,8 +121,8 @@ const DashboardPage = () => {
   const load = useCallback(
     (
       nextScope: string,
-      from: moment.Moment,
-      to: moment.Moment,
+      from: Dayjs,
+      to: Dayjs,
       nextTeam: number | undefined = teamId,
     ) => {
       runQuery({
@@ -131,9 +142,9 @@ const DashboardPage = () => {
       if (!found) {
         return;
       }
-      const next: [moment.Moment, moment.Moment] = [
-        moment().subtract(found.days, "days"),
-        moment(),
+      const next: [Dayjs, Dayjs] = [
+        dayjs().subtract(found.days, "days"),
+        dayjs(),
       ];
       setRange(next);
       load(scope, next[0], next[1]);
@@ -293,9 +304,9 @@ const DashboardPage = () => {
             value={range}
             onChange={(dates) => {
               if (dates && dates.length === 2) {
-                const next: [moment.Moment, moment.Moment] = [
-                  dates[0] as moment.Moment,
-                  dates[1] as moment.Moment,
+                const next: [Dayjs, Dayjs] = [
+                  dates[0] as Dayjs,
+                  dates[1] as Dayjs,
                 ];
                 setRange(next);
                 setPeriod("");
@@ -351,6 +362,9 @@ const DashboardPage = () => {
           />
         </ShadowSection>
       ) : null}
+
+      {/* 23-11-2026 (ETKT_14): the rest of the management board of the prototype */}
+      {scope === "company" ? <CompanyAnalysis from={range[0]} to={range[1]} /> : null}
 
       {scope === "team" && payload.members.length ? (
         <ShadowSection style={{ marginTop: 12 }}>

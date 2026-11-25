@@ -7,7 +7,7 @@
  */
 import React, { useCallback, useState } from "react";
 import { Tag } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../components/commons";
 import ExsysTable from "../../components/exsys-table";

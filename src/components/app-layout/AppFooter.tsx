@@ -12,7 +12,7 @@ import { useLabels } from "../../labels";
 import ExsysLogo from "../exsys-logo";
 
 /* front end version shown in the footer; raise it with package.json */
-export const APP_VERSION = "1.1.0";
+export const APP_VERSION = "2.2.2";
 
 const Bar = styled.footer`
   height: 38px;

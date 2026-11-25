@@ -7,7 +7,8 @@
  *         lists in a single call.
  */
 import React, { useCallback, useState } from "react";
-import { Button, Icon, Input, Modal, Spin, Tabs, message } from "antd";
+import { Button, Input, Modal, Spin, message } from "antd";
+
 import {
   Flex,
   PageTitle,
@@ -21,6 +22,8 @@ import BranchesView from "./partials/BranchesView";
 import ModulesView from "./partials/ModulesView";
 import ContractsView from "./partials/ContractsView";
 import { ClientPayloadType, ClientSetupType } from "./index.interface";
+import Icon from "../../../components/icon";
+import Tabs from "../../../components/tabs";
 
 const EMPTY: ClientPayloadType = {
   data: [],
@@ -79,9 +82,13 @@ const ClientsSetupPage = () => {
 
   const onSave = useCallback(async () => {
     const { apiValues, error } = await saveClient({
+      // 24-11-2026 OLD: record_status first, then the spread of the GET row
+      // NEW   : the spread first, record_status last
+      // REASON: every GET row carries record_status "q"; the spread wrote "q" over "u" and the save failed
+      // BENEFIT: editing a saved record works again
+      ...form,
       record_status: clientId ? "u" : "n",
       client_id: clientId || undefined,
-      ...form,
     });
 
     if (error) {
@@ -204,7 +211,7 @@ const ClientsSetupPage = () => {
       </Flex>
 
       <Modal
-        visible={adding}
+        open={adding}
         width={820}
         title={labels("add")}
         footer={null}

@@ -4,11 +4,13 @@
  * each one written in its own language, like the language list of Cure+.
  * Used on the login page and in the header.
  */
-import React from "react";
-import { Icon, Select } from "antd";
+import React, { useEffect, useRef } from "react";
+import { Select, message } from "antd";
 import styled from "styled-components";
 import { useAppConfig } from "../../store";
 import { useLanguages } from "../../labels";
+import { useBasicMutation } from "../../hooks";
+import Icon from "../icon";
 
 const Wrap = styled.span<{ round?: boolean }>`
   display: inline-flex;
@@ -27,12 +29,41 @@ const Wrap = styled.span<{ round?: boolean }>`
 interface LanguageSelectProps {
   width?: number;
   round?: boolean;
-  size?: "default" | "small" | "large";
+  size?: "middle" | "small" | "large";
 }
 
-const LanguageSelect = ({ width = 140, round, size = "default" }: LanguageSelectProps) => {
-  const { languageId, setLanguageId } = useAppConfig();
+const LanguageSelect = ({ width = 140, round, size = "middle" }: LanguageSelectProps) => {
+  const { languageId, setLanguageId, authorization, languageChanged, markLanguageSaved } =
+    useAppConfig();
   const { languages } = useLanguages();
+
+  // 24-11-2026 NEW    : a language the user picked is saved on him (script ETKT_16).
+  //   In the header: at once. On the login page: right after the login, when the
+  //   header appears (there is no session before that).
+  // REASON : Khaled 24-11-2026 - "keep the language until the user changes it again"
+  // BENEFIT: the next login opens in the same language, on any computer
+  const { mutate: saveLanguage } = useBasicMutation({
+    apiId: "myLanguage",
+    flatBody: true,
+  });
+
+  const savingRef = useRef(false); // one call at a time
+
+  useEffect(() => {
+    if (!authorization || !languageChanged || savingRef.current) {
+      return;
+    }
+    savingRef.current = true;
+    const chosen = languageId;
+    saveLanguage({ language_id: chosen }).then(({ error }) => {
+      if (error) {
+        message.error(error);
+      }
+      // cleared also on error: one try per change, never a loop of calls
+      savingRef.current = false;
+      markLanguageSaved(chosen, !error);
+    });
+  }, [authorization, languageChanged, languageId, saveLanguage, markLanguageSaved]);
 
   return (
     <Wrap round={round}>
@@ -40,8 +71,9 @@ const LanguageSelect = ({ width = 140, round, size = "default" }: LanguageSelect
         size={size}
         value={languageId}
         style={{ width }}
-        onChange={(value: number) => setLanguageId(Number(value))}
-        dropdownMatchSelectWidth={false}
+        // OLD: setLanguageId(Number(value))  NEW: true = picked by the user, so it is saved
+        onChange={(value: number) => setLanguageId(Number(value), true)}
+        popupMatchSelectWidth={false}
       >
         {languages.map((item) => (
           <Select.Option key={item.language_id} value={item.language_id}>

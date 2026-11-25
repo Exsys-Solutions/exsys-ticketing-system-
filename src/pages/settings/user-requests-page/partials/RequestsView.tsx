@@ -10,8 +10,8 @@
  * reject  : the reason is mandatory, the client manager reads it.
  */
 import React, { useCallback, useState } from "react";
-import { Icon, Input, Modal, Select, Tag, Tooltip, message } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import { Input, Modal, Select, Tag, Tooltip, message } from "antd";
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { Flex, FieldLabel, FieldValue } from "../../../../components/commons";
 import ExsysTable from "../../../../components/exsys-table";
@@ -22,6 +22,7 @@ import {
 } from "../../../../hooks";
 import { useLabels } from "../../../../labels";
 import { UserRequestRowType } from "../index.interface";
+import Icon from "../../../../components/icon";
 
 const PAGE_SIZE = 25;
 
@@ -225,7 +226,7 @@ const RequestsView = () => {
       />
 
       <Modal
-        visible={!!decision}
+        open={!!decision}
         title={isApprove ? labels("approveRequest") : labels("rejectRequest")}
         confirmLoading={saving}
         okText={isApprove ? labels("approve") : labels("reject")}

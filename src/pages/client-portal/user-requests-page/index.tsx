@@ -12,19 +12,11 @@
  * No password is typed here: management sets a one-time password on approval.
  */
 import React, { useCallback, useState } from "react";
-import {
-  Alert,
-  Button,
-  Icon,
-  Input,
-  Modal,
-  Popconfirm,
-  Select,
-  Tabs,
-  Tag,
-  message,
-} from "antd";
-import { ColumnProps } from "antd/lib/table";
+import { Alert, Button, Input, Modal, Popconfirm, Select, Tag, message } from "antd";
+import { Navigate } from "react-router-dom";
+import { PAGES_PATH_NAMES } from "../../../routes/constants";
+
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { ERROR_CODES } from "../../../api";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
@@ -37,6 +29,8 @@ import {
 } from "../../../hooks";
 import { useLabels } from "../../../labels";
 import { UserRequestRowType } from "../../settings/user-requests-page/index.interface";
+import Icon from "../../../components/icon";
+import Tabs from "../../../components/tabs";
 
 const PAGE_SIZE = 25;
 
@@ -184,18 +178,13 @@ const ClientUserRequestsPage = () => {
     },
   ];
 
+  // 24-11-2026 (v2.2.2)
+  // OLD    : a page with the server's refusal text for a user who is not the client manager
+  // NEW    : he is sent back to the portal home
+  // REASON : Khaled's decision (review of v2.2.1) - the screen is not his, so it should not open
+  // BENEFIT: a typed address behaves like every other screen he has no right to
   if (notAllowed) {
-    return (
-      <>
-        <PageTitle>{labels("userRequests")}</PageTitle>
-        <Alert
-          style={{ marginTop: 12 }}
-          type="warning"
-          showIcon
-          message={notAllowed}
-        />
-      </>
-    );
+    return <Navigate to={PAGES_PATH_NAMES.clientHome} replace />;
   }
 
   return (
@@ -231,7 +220,7 @@ const ClientUserRequestsPage = () => {
       </ShadowSection>
 
       <Modal
-        visible={!!editing}
+        open={!!editing}
         width={680}
         title={labels("newUserRequest")}
         confirmLoading={saving}
@@ -246,7 +235,7 @@ const ClientUserRequestsPage = () => {
       >
         {editing ? (
           <Flex column align="stretch" gap={10}>
-            <Alert type="info" showIcon message={labels("userRequestHint")} />
+            <Alert type="info" showIcon title={labels("userRequestHint")} />
 
             <Flex gap={10}>
               <Input

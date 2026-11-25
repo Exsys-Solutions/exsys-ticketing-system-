@@ -5,15 +5,17 @@
  *                                                no id marks them all.
  */
 import React, { useCallback, useState } from "react";
-import { Button, Icon, Tag, message as antMessage } from "antd";
-import { ColumnProps } from "antd/lib/table";
-import { useHistory } from "react-router-dom";
+import { Button, Tag, message as antMessage } from "antd";
+import type { ColumnType as ColumnProps } from "antd/es/table";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../components/commons";
 import ExsysTable from "../../components/exsys-table";
 import { useBasicMutation, useBasicQuery } from "../../hooks";
 import { useLabels } from "../../labels";
+import { isStaffUser, useAppConfig } from "../../store";
 import { ticketPath } from "../../routes/constants";
+import Icon from "../../components/icon";
 
 const PAGE_SIZE = 25;
 
@@ -28,6 +30,10 @@ const NOTIF_TYPES: { [code: string]: string } = {
   CONTRACT: "ntContract",
   CONTRACT_W: "ntContractWarn",
   CONTRACT_B: "ntContractStop",
+  // 24-11-2026 (v2.2.2) NEW: the two contract codes the job also writes (final days,
+  // grace period). OLD: they were shown as raw codes CONTRACT_F / CONTRACT_G
+  CONTRACT_F: "ntContractWarn",
+  CONTRACT_G: "ntContract",
   USERREQ: "ntUserRequest",
   USERREQ_A: "ntUserRequestOk",
   USERREQ_R: "ntUserRequestNo",
@@ -39,7 +45,10 @@ const notifTypeName = (labels: (key: string) => string, code: string) =>
 const NotificationsPage = () => {
   const labels = useLabels();
   const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
+  // 24-11-2026 (v2.2.2) NEW: the screen is open to the client too
+  const { user } = useAppConfig();
+  const isClient = !isStaffUser(user);
   const [rows, setRows] = useState<any[]>([]);
   const [offset, setOffset] = useState(0);
 
@@ -63,7 +72,11 @@ const NotificationsPage = () => {
   );
 
   const onMarkAll = useCallback(async () => {
-    const { error } = await markRead({ record_status: "u" });
+    // 24-11-2026 OLD: { record_status: "u" }  NEW: notification_id: null sent on purpose
+    // REASON : Oracle 12.1 JSON_TABLE drops a data row whose read columns are all missing,
+    //          so the server answered "data is required." and nothing was marked
+    // BENEFIT: "Mark all as read" works (no notification_id = all, as the service says)
+    const { error } = await markRead({ record_status: "u", notification_id: null });
     if (error) {
       antMessage.error(error);
       return;
@@ -118,7 +131,9 @@ const NotificationsPage = () => {
               });
             }
             if (record.ticket_id) {
-              history.push(ticketPath(record.ticket_id));
+              // OLD: ticketPath(record.ticket_id) - always the staff address
+              // NEW: the client address for a client (the staff one bounced him to /portal)
+              navigate(ticketPath(record.ticket_id, isClient));
             }
           }}
         />

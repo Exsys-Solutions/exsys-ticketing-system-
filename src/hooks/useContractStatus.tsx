@@ -12,7 +12,8 @@
  * the trigger on ETK_TICKET refuses a client ticket with -20814, so a user
  * who pokes the URL still cannot open one.
  */
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useCallback,
+  useEffect, useContext, useState } from "react";
 import useBasicQuery from "./useBasicQuery";
 import { isStaffUser, useAppConfig } from "../store";
 
@@ -55,14 +56,28 @@ export const ContractStatusProvider = ({
   // only a client user has a contract banner; staff see it inside the ticket
   const isClient = !!user && !isStaffUser(user);
 
+  // 24-11-2026 NEW: same rule as useRequestRights - asked only when the services answer
+  const ready = !!authorization && isClient && user?.must_change_pwd_flag !== "Y";
+
   const { loading, runQuery } = useBasicQuery<{ data: ContractStatusType[] }>({
     apiId: "contractStatus",
-    callOnFirstRender: !!authorization && isClient,
+    // OLD: callOnFirstRender: !!authorization && isClient  (asked ONE time per page load)
+    // REASON : a second client signing in on the same tab kept the first one's banner (or none),
+    //          and a new client user (first password change) got -20803 and never a banner
+    // BENEFIT: every client always sees his own contract state (the block included)
     onResponse: ({ apiValues, error }) => {
       const row = !error && apiValues ? (apiValues.data || [])[0] : undefined;
       setStatus(row ? { ...EMPTY, ...row } : EMPTY);
     },
   });
+
+  useEffect(() => {
+    if (ready) {
+      runQuery();
+    } else {
+      setStatus(EMPTY);
+    }
+  }, [ready, runQuery]);
 
   const reload = useCallback(() => {
     if (isClient) {

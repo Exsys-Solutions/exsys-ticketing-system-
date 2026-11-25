@@ -9,7 +9,7 @@
  */
 import React, { useCallback, useState } from "react";
 import { Input, Switch, Tag, message } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { Flex } from "../../../../components/commons";
 import ExsysTable from "../../../../components/exsys-table";
 import { useBasicMutation, useBasicQuery } from "../../../../hooks";

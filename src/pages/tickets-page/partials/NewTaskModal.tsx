@@ -12,14 +12,14 @@
  */
 import React, { useEffect, useMemo, useState } from "react";
 import { DatePicker, Input, Modal, Select, message as antMessage } from "antd";
-import moment from "moment";
+import dayjs, { Dayjs } from "dayjs";
 import { Flex, FieldLabel } from "../../../components/commons";
 import { useBasicMutation, useLookups } from "../../../hooks";
 import { useAppConfig } from "../../../store";
 import { useLabels } from "../../../labels";
 
 interface Props {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onCreated: (ticketId: number) => void;
 }
@@ -32,10 +32,10 @@ interface TaskType {
   assignee_user_id?: number;
   company_priority?: number;
   module_id?: string;
-  due_date?: moment.Moment | null;
+  due_date?: Dayjs | null;
 }
 
-const NewTaskModal = ({ visible, onClose, onCreated }: Props) => {
+const NewTaskModal = ({ open, onClose, onCreated }: Props) => {
   const labels = useLabels();
   const { user } = useAppConfig();
   const { lookups } = useLookups();
@@ -65,11 +65,11 @@ const NewTaskModal = ({ visible, onClose, onCreated }: Props) => {
   const [task, setTask] = useState<TaskType>(blank);
 
   useEffect(() => {
-    if (visible) {
+    if (open) {
       setTask(blank());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, types.length]);
+  }, [open, types.length]);
 
   const members = useMemo(
     () =>
@@ -113,7 +113,7 @@ const NewTaskModal = ({ visible, onClose, onCreated }: Props) => {
 
   return (
     <Modal
-      visible={visible}
+      open={open}
       width={720}
       title={labels("newTask")}
       okText={labels("save")}
@@ -245,7 +245,7 @@ const NewTaskModal = ({ visible, onClose, onCreated }: Props) => {
               format="YYYY-MM-DD"
               placeholder={labels("dueDate")}
               value={task.due_date || undefined}
-              disabledDate={(day) => !!day && day.isBefore(moment().startOf("day"))}
+              disabledDate={(day) => !!day && day.isBefore(dayjs().startOf("day"))}
               onChange={(day) => setTask({ ...task, due_date: day })}
             />
           </div>

@@ -8,26 +8,16 @@
  *   oncall                       -> who takes a Critical ticket out of hours
  */
 import React, { useCallback, useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Icon,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Select,
-  Switch,
-  Tabs,
-  Tag,
-  message,
-} from "antd";
-import moment from "moment";
+import { Button, DatePicker, Input, InputNumber, Modal, Popconfirm, Select, Switch, Tag, message } from "antd";
+
+import dayjs, { Dayjs } from "dayjs";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
 import ExsysTable from "../../../components/exsys-table";
 import { useBasicMutation, useBasicQuery } from "../../../hooks";
 import { useLabels } from "../../../labels";
+import Icon from "../../../components/icon";
+import Tabs from "../../../components/tabs";
 
 const DT_FORMAT = "YYYY-MM-DD HH:mm";
 
@@ -231,7 +221,7 @@ const TeamsSetupPage = () => {
 
       {/* ---- function ---- */}
       <Modal
-        visible={!!editFunction}
+        open={!!editFunction}
         title={labels("functionName")}
         confirmLoading={savingFunction}
         okText={labels("save")}
@@ -239,8 +229,12 @@ const TeamsSetupPage = () => {
         onCancel={() => setEditFunction(null)}
         onOk={async () => {
           const { error } = await saveFunction({
-            record_status: editFunction && editFunction.function_name ? "u" : "n",
+            // 24-11-2026 OLD: record_status first, then the spread of the GET row
+            // NEW   : the spread first, record_status last
+            // REASON: every GET row carries record_status "q"; the spread wrote "q" over "u" and the save failed
+            // BENEFIT: editing a saved record works again
             ...editFunction,
+            record_status: editFunction && editFunction.function_name ? "u" : "n",
           });
           after(error, () => setEditFunction(null));
         }}
@@ -336,7 +330,7 @@ const TeamsSetupPage = () => {
 
       {/* ---- team ---- */}
       <Modal
-        visible={!!editTeam}
+        open={!!editTeam}
         title={labels("team")}
         confirmLoading={savingTeam}
         okText={labels("save")}
@@ -344,8 +338,12 @@ const TeamsSetupPage = () => {
         onCancel={() => setEditTeam(null)}
         onOk={async () => {
           const { error } = await saveTeam({
-            record_status: editTeam && editTeam.team_id ? "u" : "n",
+            // 24-11-2026 OLD: record_status first, then the spread of the GET row
+            // NEW   : the spread first, record_status last
+            // REASON: every GET row carries record_status "q"; the spread wrote "q" over "u" and the save failed
+            // BENEFIT: editing a saved record works again
             ...editTeam,
+            record_status: editTeam && editTeam.team_id ? "u" : "n",
           });
           after(error, () => setEditTeam(null));
         }}
@@ -422,7 +420,7 @@ const TeamsSetupPage = () => {
 
       {/* ---- on-call ---- */}
       <Modal
-        visible={!!editOncall}
+        open={!!editOncall}
         title={labels("oncallRoster")}
         confirmLoading={savingOncall}
         okText={labels("save")}
@@ -430,8 +428,12 @@ const TeamsSetupPage = () => {
         onCancel={() => setEditOncall(null)}
         onOk={async () => {
           const { error } = await saveOncall({
-            record_status: editOncall && editOncall.oncall_id ? "u" : "n",
+            // 24-11-2026 OLD: record_status first, then the spread of the GET row
+            // NEW   : the spread first, record_status last
+            // REASON: every GET row carries record_status "q"; the spread wrote "q" over "u" and the save failed
+            // BENEFIT: editing a saved record works again
             ...editOncall,
+            record_status: editOncall && editOncall.oncall_id ? "u" : "n",
           });
           after(error, () => setEditOncall(null));
         }}
@@ -477,7 +479,7 @@ const TeamsSetupPage = () => {
               placeholder={labels("from")}
               value={
                 editOncall.from_date
-                  ? moment(editOncall.from_date, DT_FORMAT)
+                  ? dayjs(editOncall.from_date, DT_FORMAT)
                   : undefined
               }
               onChange={(date) =>
@@ -493,7 +495,7 @@ const TeamsSetupPage = () => {
               placeholder={labels("to")}
               value={
                 editOncall.to_date
-                  ? moment(editOncall.to_date, DT_FORMAT)
+                  ? dayjs(editOncall.to_date, DT_FORMAT)
                   : undefined
               }
               onChange={(date) =>

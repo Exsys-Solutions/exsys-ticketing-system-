@@ -52,7 +52,7 @@ const ContractBanner = () => {
       banner
       showIcon
       type={status.contract_state === "W" ? "warning" : "error"}
-      message={<span style={{ color: tone.text }}>{status.message}</span>}
+      title={<span style={{ color: tone.text }}>{status.message}</span>}
       style={{
         background: tone.background,
         borderBottom: `2px solid ${tone.border}`,

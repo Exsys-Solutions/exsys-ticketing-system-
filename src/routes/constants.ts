@@ -13,6 +13,10 @@ export const PAGES_PATH_NAMES = {
   escalation: "/escalation",
   notifications: "/notifications",
   clients: "/clients",
+  // 23-11-2026 (script ETKT_13): guide, repeated problems, FAQ
+  guide: "/guide",
+  problems: "/problems",
+  faq: "/faq",
   // setup (management only)
   setupClients: "/setup/clients",
   setupUsers: "/setup/users",
@@ -27,6 +31,14 @@ export const PAGES_PATH_NAMES = {
   clientMyTickets: "/portal/tickets",
   clientTicketDetails: "/portal/tickets/:ticketId",
   clientUserRequests: "/portal/user-requests",
+  clientFaq: "/portal/faq",
+  // 23-11-2026 (script ETKT_14)
+  clientDashboard: "/portal/dashboard",
+  // 24-11-2026 (script ETKT_15): reports
+  reports: "/reports",
+  clientReports: "/portal/reports",
+  // 24-11-2026 (v2.2.2) NEW: the client reads his notifications too
+  clientNotifications: "/portal/notifications",
 };
 
 export const ticketPath = (ticketId: number | string, isClient?: boolean) =>

@@ -25,10 +25,11 @@ export interface RequestResponse<T = any> {
 export type RecordType = { [key: string]: any };
 
 const baseApiUrl = (
-  process.env.REACT_APP_BASE_API_URL || "/ords/etkt"
+  import.meta.env.REACT_APP_BASE_API_URL || "/ords/etkt"
 ).replace(/\/$/, "");
 
-const buildUrl = (apiId: ApiIdType, params?: RecordType) => {
+// 24-11-2026: exported for the report links (a report opens in a new tab, not through fetch)
+export const buildUrl = (apiId: ApiIdType, params?: RecordType) => {
   const search = new URLSearchParams();
 
   Object.keys(params || {}).forEach((key) => {

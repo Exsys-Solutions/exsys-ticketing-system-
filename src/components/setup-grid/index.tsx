@@ -11,25 +11,15 @@
  * and it reloads the screen's single GET after every write.
  */
 import React, { useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Icon,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Select,
-  Switch,
-  message,
-} from "antd";
-import { ColumnProps } from "antd/lib/table";
-import moment from "moment";
+import { Button, DatePicker, Input, InputNumber, Modal, Popconfirm, Select, Switch, message } from "antd";
+import type { ColumnType as ColumnProps } from "antd/es/table";
+import dayjs, { Dayjs } from "dayjs";
 import { Flex, SubText } from "../commons";
 import ExsysTable from "../exsys-table";
 import { useBasicMutation } from "../../hooks";
 import { useLabels } from "../../labels";
 import { ApiIdType } from "../../api";
+import Icon from "../icon";
 
 export interface SetupFieldType {
   name: string;
@@ -207,7 +197,7 @@ function SetupGrid<T extends { [key: string]: any }>({
           format={DATE_FORMAT}
           placeholder={field.label}
           disabled={disabled}
-          value={value ? moment(value, DATE_FORMAT) : undefined}
+          value={value ? dayjs(value, DATE_FORMAT) : undefined}
           onChange={(date) => set(date ? date.format(DATE_FORMAT) : undefined)}
         />
       );
@@ -264,7 +254,7 @@ function SetupGrid<T extends { [key: string]: any }>({
       />
 
       <Modal
-        visible={!!editing}
+        open={!!editing}
         title={isNew ? labels("add") : labels("edit")}
         confirmLoading={saving}
         okText={labels("save")}

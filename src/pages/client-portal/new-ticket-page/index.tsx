@@ -10,7 +10,7 @@
  */
 import React, { useCallback, useMemo, useState } from "react";
 import { Alert, Button, Form, Input, Select, message } from "antd";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PageTitle, ShadowSection, SubText } from "../../../components/commons";
 import { useBasicMutation, useContractStatus, useLookups } from "../../../hooks";
 import { useAppConfig } from "../../../store";
@@ -19,7 +19,7 @@ import { PAGES_PATH_NAMES } from "../../../routes/constants";
 
 const ClientNewTicketPage = () => {
   const labels = useLabels();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAppConfig();
   const { lookups } = useLookups();
@@ -60,12 +60,12 @@ const ClientNewTicketPage = () => {
 
     const created = (apiValues.data || [])[0];
     message.success(labels("saved"));
-    history.push(
+    navigate(
       created && created.ticket_id
         ? `/portal/tickets/${created.ticket_id}`
         : PAGES_PATH_NAMES.clientMyTickets,
     );
-  }, [mutate, form, context, labels, history]);
+  }, [mutate, form, context, labels, navigate]);
 
   // a client user tied to one branch does not choose a branch
   const branches = lookups.branches;
@@ -83,7 +83,7 @@ const ClientNewTicketPage = () => {
           <Alert
             type="error"
             showIcon
-            message={contract.message}
+            title={contract.message}
             style={{ marginBottom: 12 }}
           />
         ) : null}
@@ -92,7 +92,7 @@ const ClientNewTicketPage = () => {
           <Alert
             type="error"
             showIcon
-            message={error}
+            title={error}
             style={{ marginBottom: 12 }}
           />
         ) : null}
@@ -102,7 +102,7 @@ const ClientNewTicketPage = () => {
             type="info"
             showIcon
             style={{ marginBottom: 12 }}
-            message={`${labels("exsysContext")}: ${context.ctx_page_name}`}
+            title={`${labels("exsysContext")}: ${context.ctx_page_name}`}
             description={context.ctx_error || undefined}
           />
         ) : null}

@@ -3,10 +3,11 @@
  * SLA tag, sentiment icon. Kept together so the colors are decided once.
  */
 import React from "react";
-import { Tag, Icon, Tooltip } from "antd";
+import { Tag, Tooltip } from "antd";
 import styled, { useTheme } from "styled-components";
 import { useLabels } from "../../labels";
 import { useLookups } from "../../hooks";
+import Icon from "../icon";
 
 /* 23-11-2026 NEW: priority number -> its name from lookups (was shown as a bare number) */
 export const usePriorityName = () => {
@@ -42,6 +43,29 @@ export const PriorityBar = styled.span<{ priority?: number }>`
     theme.colors.mutedText};
 `;
 
+const StatusPill = styled.span<{ $closed?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: ${({ theme, $closed }) =>
+    $closed ? theme.colors.success : theme.colors.primary};
+  background: ${({ theme, $closed }) =>
+    $closed ? theme.colors.successBackground : theme.colors.infoBackground};
+
+  &::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+`;
+
 export const StatusTag = ({
   statusName,
   openFlag,
@@ -49,15 +73,12 @@ export const StatusTag = ({
   statusName?: string;
   openFlag?: string;
 }) => {
-  const theme = useTheme();
   if (!statusName) {
     return null;
   }
-  return (
-    <Tag color={openFlag === "N" ? theme.colors.success : theme.colors.primary}>
-      {statusName}
-    </Tag>
-  );
+  // 24-11-2026 (v2.2.2) OLD: a solid antd Tag  NEW: the Cure+ status pill "(dot) name"
+  // REASON: better look (Cure+ screens as reference)  BENEFIT: lighter lists, same colours
+  return <StatusPill $closed={openFlag === "N"}>{statusName}</StatusPill>;
 };
 
 export const PriorityTag = ({
@@ -97,23 +118,27 @@ export const SlaTag = ({ slaState }: { slaState?: string }) => {
   return <Tag color={theme.colors.success}>{labels("slaOk")}</Tag>;
 };
 
-/* sentiment: A = angry, N = neutral, H = happy */
+/*
+ * 24-11-2026 (v2.2.2) FIX
+ *   OLD    : A = angry, H = happy - codes the server never sends, so the angry
+ *            face was never drawn in the tickets list; tooltip in English only
+ *   NEW    : G = angry, N = neutral, P = pleased (ETK_TICKET.SENTIMENT), tooltip
+ *            from the screen texts
+ *   BENEFIT: the agent sees the angry client in the list, in his language
+ */
 export const SentimentIcon = ({ sentiment }: { sentiment?: string }) => {
   const theme = useTheme();
+  const labels = useLabels();
 
-  if (sentiment === "A") {
+  if (sentiment === "G") {
     return (
-      <Tooltip title="angry">
+      <Tooltip title={labels("viewAngry")}>
         <Icon type="frown" style={{ color: theme.colors.error }} />
       </Tooltip>
     );
   }
-  if (sentiment === "H") {
-    return (
-      <Tooltip title="happy">
-        <Icon type="smile" style={{ color: theme.colors.success }} />
-      </Tooltip>
-    );
+  if (sentiment === "P") {
+    return <Icon type="smile" style={{ color: theme.colors.success }} />;
   }
   return null;
 };

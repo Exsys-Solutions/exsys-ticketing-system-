@@ -9,13 +9,15 @@
  * change here changes the behaviour of every new ticket - no code, no deploy.
  */
 import React, { useCallback, useState } from "react";
-import { Alert, Tabs, Tag } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import { Alert, Tag } from "antd";
+
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
 import SetupGrid from "../../../components/setup-grid";
 import { useBasicQuery } from "../../../hooks";
 import { useLabels } from "../../../labels";
+import Tabs from "../../../components/tabs";
 
 interface PayloadType {
   priorities: any[];
@@ -154,7 +156,7 @@ const SlaSetupPage = () => {
         style={{ marginBottom: 12 }}
         // 23-11-2026 OLD: "SLA: internal note = 50% · ESC_MODE = FIXED"
         //            NEW: the same two settings in words
-        message={`${labels("internalSla")}: ${setting(
+        title={`${labels("internalSla")}: ${setting(
           "INTERNAL_SLA_PCT",
         )}%  ·  ${labels("escMode")}: ${escModeName(setting("ESC_MODE"))}`}
       />

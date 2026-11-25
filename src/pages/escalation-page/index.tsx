@@ -7,8 +7,8 @@
  */
 import React, { useCallback, useEffect, useState } from "react";
 import { Tag } from "antd";
-import { ColumnProps } from "antd/lib/table";
-import { useHistory } from "react-router-dom";
+import type { ColumnType as ColumnProps } from "antd/es/table";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../components/commons";
 import ExsysTable from "../../components/exsys-table";
@@ -22,7 +22,7 @@ const PAGE_SIZE = 25;
 const EscalationPage = () => {
   const labels = useLabels();
   const theme = useTheme();
-  const history = useHistory();
+  const navigate = useNavigate();
   const priorityName = usePriorityName();
   const [rows, setRows] = useState<any[]>([]);
   const [offset, setOffset] = useState(0);
@@ -91,7 +91,7 @@ const EscalationPage = () => {
           offset={offset}
           pageSize={PAGE_SIZE}
           onPageChange={load}
-          onRowClick={(record) => history.push(ticketPath(record.ticket_id))}
+          onRowClick={(record) => navigate(ticketPath(record.ticket_id))}
           scrollX={1200}
         />
       </ShadowSection>

@@ -4,21 +4,25 @@
  * whole group (CLA) or one branch (CLU), so the screen sends no filter for it.
  */
 import React, { useCallback, useState } from "react";
-import { Button, Icon, Tabs, Tooltip } from "antd";
-import { ColumnProps } from "antd/lib/table";
-import { useHistory } from "react-router-dom";
+import { Button, Tooltip } from "antd";
+
+import type { ColumnType as ColumnProps } from "antd/es/table";
+import { useNavigate } from "react-router-dom";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
 import ExsysTable from "../../../components/exsys-table";
 import { SlaTag, StatusTag } from "../../../components/ticket-bits";
 import { useBasicQuery, useContractStatus } from "../../../hooks";
 import { useLabels } from "../../../labels";
 import { PAGES_PATH_NAMES, ticketPath } from "../../../routes/constants";
+import Icon from "../../../components/icon";
+import Tabs from "../../../components/tabs";
+import { ExportExcelButton } from "../../../components/report-bits";
 
 const PAGE_SIZE = 25;
 
 const ClientMyTicketsPage = () => {
   const labels = useLabels();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [view, setView] = useState("open");
   const [offset, setOffset] = useState(0);
   const [rows, setRows] = useState<any[]>([]);
@@ -75,15 +79,19 @@ const ClientMyTicketsPage = () => {
     <>
       <Flex justify="space-between" margin="0 0 12px">
         <PageTitle>{labels("myTickets")}</PageTitle>
-        <Tooltip title={canOpen ? "" : contract.message || ""}>
-          <Button
-            type="primary"
-            disabled={!canOpen}
-            onClick={() => history.push(PAGES_PATH_NAMES.clientNewTicket)}
-          >
-            <Icon type="plus" /> {labels("newTicket")}
-          </Button>
-        </Tooltip>
+        <Flex gap={8}>
+          {/* 24-11-2026 NEW (script ETKT_15): every row of the chosen tab as an Excel file */}
+          <ExportExcelButton filters={{ view }} />
+          <Tooltip title={canOpen ? "" : contract.message || ""}>
+            <Button
+              type="primary"
+              disabled={!canOpen}
+              onClick={() => navigate(PAGES_PATH_NAMES.clientNewTicket)}
+            >
+              <Icon type="plus" /> {labels("newTicket")}
+            </Button>
+          </Tooltip>
+        </Flex>
       </Flex>
 
       <ShadowSection>
@@ -102,7 +110,7 @@ const ClientMyTicketsPage = () => {
           pageSize={PAGE_SIZE}
           onPageChange={(nextOffset) => load(view, nextOffset)}
           onRowClick={(record) =>
-            history.push(ticketPath(record.ticket_id, true))
+            navigate(ticketPath(record.ticket_id, true))
           }
           scrollX={1000}
         />

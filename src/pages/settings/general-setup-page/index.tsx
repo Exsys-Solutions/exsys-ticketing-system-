@@ -10,13 +10,15 @@
  * bad one would not fail here - it would show up later as odd behaviour.
  */
 import React, { useCallback, useState } from "react";
-import { Tabs, Tag } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import { Tag } from "antd";
+
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
 import SetupGrid from "../../../components/setup-grid";
 import { useBasicQuery, useLookups } from "../../../hooks";
 import { useLabels } from "../../../labels";
+import Tabs from "../../../components/tabs";
 
 interface PayloadType {
   settings: any[];

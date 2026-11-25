@@ -5,21 +5,13 @@
  * switched off instead of deleted - the service refuses the delete and says so.
  */
 import React, { useState } from "react";
-import {
-  Button,
-  Icon,
-  Input,
-  Modal,
-  Popconfirm,
-  Select,
-  Tag,
-  message,
-} from "antd";
+import { Button, Input, Modal, Popconfirm, Select, Tag, message } from "antd";
 import { Flex } from "../../../../components/commons";
 import ExsysTable from "../../../../components/exsys-table";
 import { useBasicMutation } from "../../../../hooks";
 import { useLabels } from "../../../../labels";
 import { BranchType } from "../index.interface";
+import Icon from "../../../../components/icon";
 
 interface Props {
   clientId: number;
@@ -98,7 +90,7 @@ const BranchesView = ({ clientId, branches, branchTypes, onReload }: Props) => {
       />
 
       <Modal
-        visible={!!editing}
+        open={!!editing}
         title={labels("branches")}
         confirmLoading={loading}
         okText={labels("save")}

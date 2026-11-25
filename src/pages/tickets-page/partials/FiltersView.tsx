@@ -1,8 +1,9 @@
 import React from "react";
-import { Button, Icon, Input, Select } from "antd";
+import { Button, Input, Select } from "antd";
 import { Flex } from "../../../components/commons";
 import { useLookups } from "../../../hooks";
 import { useLabels } from "../../../labels";
+import Icon from "../../../components/icon";
 
 export interface TicketFiltersType {
   view: string;

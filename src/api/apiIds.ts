@@ -73,6 +73,26 @@ export const API_IDS = {
   // languages (script ETKT_11, 23-11-2026): no authorization, the login page needs them
   languages: "etk_language_pkg/languages_data",
   labels: "etk_language_pkg/labels_data",
+  // 24-11-2026 (script ETKT_16): the language the user picks is saved on him
+  myLanguage: "etk_language_pkg/my_language_dml",
+  // guide, FAQ and repeated problems (script ETKT_13, 23-11-2026)
+  kbArticles: "etk_kb_pkg/articles_data",
+  kbArticleDml: "etk_kb_pkg/article_dml",
+  kbArticleAction: "etk_kb_pkg/article_action_dml",
+  kbFaq: "etk_kb_pkg/faq_data",
+  // 24-11-2026 (script ETKT_15): reports and Excel export (output H page / X Excel / J JSON)
+  ticketsReport: "etk_report_pkg/tickets_report",
+  slaReport: "etk_report_pkg/sla_report",
+  staffReport: "etk_report_pkg/staff_report",
+  clientReport: "etk_report_pkg/client_report",
+  kbFaqFeedback: "etk_kb_pkg/faq_feedback_dml",
+  kbProblems: "etk_kb_pkg/problems_data",
+  kbProblemDml: "etk_kb_pkg/problem_dml",
+  kbProblemLink: "etk_kb_pkg/problem_link_dml",
+  // client home, client statistics, company analysis (script ETKT_14, 23-11-2026)
+  clientHome: "etk_analytics_pkg/client_home_data",
+  clientDashboard: "etk_analytics_pkg/client_dashboard_data",
+  companyAnalysis: "etk_analytics_pkg/company_analysis_data",
 } as const;
 
 export type ApiIdType = keyof typeof API_IDS;

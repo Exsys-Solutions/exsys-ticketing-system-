@@ -12,11 +12,12 @@
  * Every rule is in ETK_USER_REQUEST_PKG; a non management caller gets -20812.
  */
 import React, { useState } from "react";
-import { Tabs } from "antd";
+
 import { PageTitle, ShadowSection } from "../../../components/commons";
 import { useLabels } from "../../../labels";
 import RequestsView from "./partials/RequestsView";
 import ClientManagersView from "./partials/ClientManagersView";
+import Tabs from "../../../components/tabs";
 
 const UserRequestsSetupPage = () => {
   const labels = useLabels();

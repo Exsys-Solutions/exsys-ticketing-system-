@@ -10,7 +10,7 @@
  */
 import React, { useMemo } from "react";
 import { Table } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import styled from "styled-components";
 import { useLabels } from "../../labels";
 
@@ -19,17 +19,32 @@ const TableWrapper = styled.div`
     background: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.bodyText};
   }
-  .ant-table-thead > tr > th {
-    background: ${({ theme }) => theme.colors.surfaceSoft};
-    color: ${({ theme }) => theme.colors.headingText};
-    font-weight: 600;
+  /*
+   * 24-11-2026 (v2.2.2) - the Cure+ grid head
+   *   OLD    : grey head with dark text, grey row hover
+   *   NEW    : EXSYS blue head with white centred text, light blue row hover
+   *   REASON : Khaled asked for a better look (Cure+ screens as reference)
+   *   BENEFIT: every list of the app reads like a Cure+ list (one change, all screens)
+   */
+  .ant-table-thead > tr > th,
+  .ant-table-thead > tr > td {
+    background: ${({ theme }) => theme.colors.primary} !important;
+    color: ${({ theme }) => theme.colors.onAccent} !important;
+    font-weight: 700;
     white-space: nowrap;
+    text-align: center;
+  }
+  .ant-table-thead > tr > th::before {
+    background: #ffffff55 !important;
+  }
+  .ant-table-container {
+    border-radius: 8px;
   }
   .ant-table-tbody > tr > td {
     border-bottom: 1px solid ${({ theme }) => theme.colors.tableCellBorder};
   }
   .ant-table-tbody > tr:hover > td {
-    background: ${({ theme }) => theme.colors.menuHover};
+    background: ${({ theme }) => theme.colors.infoBackground} !important;
   }
   .etk-row-late > td {
     background: ${({ theme }) => theme.colors.dangerBackground};

@@ -7,6 +7,7 @@
  * context, but the selector names are kept identical so code moves between the
  * two repos unchanged.
  */
+import { clearSessionFilters } from "../hooks/useSessionState";
 import React, {
   createContext,
   useCallback,
@@ -42,6 +43,8 @@ interface SessionType {
   authorization: string;
   user?: CurrentUserType;
   languageId: number;
+  // 24-11-2026 NEW: true = the user picked a language that is not saved on him yet
+  languageChanged?: boolean;
 }
 
 const STORAGE_KEY = "etkt-session";
@@ -57,14 +60,17 @@ const readStoredSession = (): SessionType => {
   }
   return {
     authorization: "",
-    languageId: Number(process.env.REACT_APP_DEFAULT_LANGUAGE_ID || 2),
+    languageId: Number(import.meta.env.REACT_APP_DEFAULT_LANGUAGE_ID || 2),
   };
 };
 
 interface AppConfigContextProps extends SessionType {
   setSession: (authorization: string, user: CurrentUserType) => void;
   setUser: (user: CurrentUserType) => void;
-  setLanguageId: (languageId: number) => void;
+  // 24-11-2026: changed = true when the USER picked it (it is then saved on him)
+  setLanguageId: (languageId: number, changed?: boolean) => void;
+  // 24-11-2026 NEW: the picked language reached the server (saved = it was stored on the user)
+  markLanguageSaved: (languageId: number, saved: boolean) => void;
   clearSession: () => void;
 }
 
@@ -84,14 +90,35 @@ export const AppConfigProvider = ({
     setSessionState(next);
   }, []);
 
+  /*
+   * 24-11-2026 CHANGED AGAIN
+   *   OLD    : the language of the login page always won, even when the user never
+   *            touched it (default Arabic), so his saved language was lost.
+   *   NEW    : picked on the login page -> that one (and it is saved on him by
+   *            LanguageSelect); not picked -> the language saved on the user.
+   *   REASON : Khaled 24-11-2026 - "keep the user's language until he changes it again".
+   *   BENEFIT: every login opens in the user's own language.
+   *
+   * 23-11-2026 CHANGED
+   *   OLD    : languageId = user.language_id (the language saved on the user);
+   *            a user who chose English on the login page found Arabic inside.
+   *   NEW    : the language chosen on the login page is kept; the saved one is
+   *            used only when none was chosen (no language in the session).
+   *   REASON : Khaled - "logged in in English, found Arabic inside".
+   *   BENEFIT: the system opens in the language the user just picked.
+   */
   const setSession = useCallback(
     (authorization: string, user: CurrentUserType) =>
       persist({
         authorization,
         user,
-        languageId: user.language_id || 2,
+        // OLD: languageId: session.languageId || user.language_id || 2
+        languageId: session.languageChanged
+          ? session.languageId
+          : user.language_id || session.languageId || 2,
+        languageChanged: !!session.languageChanged,
       }),
-    [persist],
+    [persist, session.languageId, session.languageChanged],
   );
 
   const setUser = useCallback(
@@ -105,9 +132,32 @@ export const AppConfigProvider = ({
   );
 
   const setLanguageId = useCallback(
-    (languageId: number) =>
+    (languageId: number, changed?: boolean) =>
       setSessionState((previous) => {
-        const next = { ...previous, languageId };
+        // OLD: const next = { ...previous, languageId };
+        const next = {
+          ...previous,
+          languageId,
+          languageChanged: changed ? true : previous.languageChanged,
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        return next;
+      }),
+    [],
+  );
+
+  // 24-11-2026 NEW: called by LanguageSelect when the save call came back
+  const markLanguageSaved = useCallback(
+    (languageId: number, saved: boolean) =>
+      setSessionState((previous) => {
+        const next = {
+          ...previous,
+          languageChanged: false,
+          user:
+            saved && previous.user
+              ? { ...previous.user, language_id: languageId }
+              : previous.user,
+        };
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         return next;
       }),
@@ -116,15 +166,24 @@ export const AppConfigProvider = ({
 
   const clearSession = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
+    // 24-11-2026 NEW: the screen filters of this user are not kept for the next user
+    clearSessionFilters();
     setSessionState({
       authorization: "",
-      languageId: Number(process.env.REACT_APP_DEFAULT_LANGUAGE_ID || 2),
+      languageId: Number(import.meta.env.REACT_APP_DEFAULT_LANGUAGE_ID || 2),
     });
   }, []);
 
   const value = useMemo(
-    () => ({ ...session, setSession, setUser, setLanguageId, clearSession }),
-    [session, setSession, setUser, setLanguageId, clearSession],
+    () => ({
+      ...session,
+      setSession,
+      setUser,
+      setLanguageId,
+      markLanguageSaved,
+      clearSession,
+    }),
+    [session, setSession, setUser, setLanguageId, markLanguageSaved, clearSession],
   );
 
   return (

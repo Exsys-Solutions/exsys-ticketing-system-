@@ -12,13 +12,15 @@
  *    live rule on screen and never actually fire.
  */
 import React, { useCallback, useState } from "react";
-import { Alert, Tabs, Tag } from "antd";
-import { ColumnProps } from "antd/lib/table";
+import { Alert, Tag } from "antd";
+
+import type { ColumnType as ColumnProps } from "antd/es/table";
 import { useTheme } from "styled-components";
 import { Flex, PageTitle, ShadowSection } from "../../../components/commons";
 import SetupGrid from "../../../components/setup-grid";
 import { useBasicQuery, useLookups } from "../../../hooks";
 import { useIsArabic, useLabels } from "../../../labels";
+import Tabs from "../../../components/tabs";
 
 interface PayloadType {
   statuses: any[];
@@ -222,7 +224,7 @@ const WorkflowSetupPage = () => {
               type="info"
               showIcon
               style={{ marginBottom: 10 }}
-              message={labels("lockedField")}
+              title={labels("lockedField")}
             />
             <SetupGrid
               rows={payload.statuses}
