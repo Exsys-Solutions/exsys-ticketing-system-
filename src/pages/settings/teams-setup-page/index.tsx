@@ -255,6 +255,7 @@ const TeamsSetupPage = () => {
             />
             <Input
               placeholder={labels("nameEn")}
+              maxLength={60} /* 25-11-2026 FIX: server size */
               value={editFunction.description_p || ""}
               onChange={(event) =>
                 setEditFunction({
@@ -265,6 +266,7 @@ const TeamsSetupPage = () => {
             />
             <Input
               placeholder={labels("nameAr")}
+              maxLength={60} /* 25-11-2026 FIX: server size */
               value={editFunction.description_s || ""}
               onChange={(event) =>
                 setEditFunction({
@@ -364,6 +366,7 @@ const TeamsSetupPage = () => {
             />
             <Input
               placeholder={labels("nameEn")}
+              maxLength={60} /* 25-11-2026 FIX: server size */
               value={editTeam.description_p || ""}
               onChange={(event) =>
                 setEditTeam({ ...editTeam, description_p: event.target.value })
@@ -371,6 +374,7 @@ const TeamsSetupPage = () => {
             />
             <Input
               placeholder={labels("nameAr")}
+              maxLength={60} /* 25-11-2026 FIX: server size */
               value={editTeam.description_s || ""}
               onChange={(event) =>
                 setEditTeam({ ...editTeam, description_s: event.target.value })
@@ -507,6 +511,7 @@ const TeamsSetupPage = () => {
             />
             <Input
               placeholder={labels("notes")}
+              maxLength={200} /* 25-11-2026 FIX: server size */
               value={editOncall.notes || ""}
               onChange={(event) =>
                 setEditOncall({ ...editOncall, notes: event.target.value })

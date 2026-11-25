@@ -32,6 +32,16 @@ interface Props {
   onDone: () => void;
 }
 
+/*
+ * 25-11-2026 FIX (review): the size of each text the server reads (ETK_TICKET_PKG.ticket_action_dml).
+ * Oracle 12.1 JSON_TABLE turns a LONGER text into NULL with no error, so the text was lost.
+ */
+const FIELD_MAX: { [field: string]: number } = {
+  resolution_note: 2000,
+  block_reason: 500,
+  cancel_reason: 500,
+};
+
 const ActionsBar = ({
   ticket,
   nextStatuses,
@@ -129,6 +139,8 @@ const ActionsBar = ({
               <Input.TextArea
                 key={field.field}
                 rows={3}
+                // 25-11-2026 FIX: the server sizes (OLD: none - a longer text was read as EMPTY)
+                maxLength={FIELD_MAX[field.field] || 500}
                 style={{ marginBottom: 12 }}
                 placeholder={field.label}
                 value={form[field.field] || ""}
@@ -154,6 +166,7 @@ const ActionsBar = ({
               />
               <Input.TextArea
                 rows={3}
+                maxLength={500} /* 25-11-2026 FIX: a longer comment was dropped */
                 placeholder={labels("clientComment")}
                 value={form.client_comment || ""}
                 onChange={(event) =>
@@ -206,6 +219,7 @@ const ActionsBar = ({
           </Select>
           <Input.TextArea
             rows={2}
+            maxLength={1000} /* 25-11-2026 FIX: longer notes were dropped */
             placeholder={labels("notes")}
             value={form.notes || ""}
             onChange={(event) => setForm({ ...form, notes: event.target.value })}

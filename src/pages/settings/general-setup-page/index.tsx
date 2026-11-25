@@ -142,7 +142,7 @@ const GeneralSetupPage = () => {
               note={labels("hintSettings")}
               fields={[
                 { name: "setting_value", label: labels("settingValue"), type: "text", max: 400 },
-                { name: "description", label: labels("description"), type: "textarea" },
+                { name: "description", label: labels("description"), type: "textarea", max: 400 }, // 25-11-2026 FIX: max
               ]}
             />
           </Tabs.TabPane>
@@ -274,7 +274,7 @@ const GeneralSetupPage = () => {
                 { name: "api_key_ref", label: labels("apiKeyRef"), type: "text", max: 100 },
                 { name: "default_flag", label: labels("isDefault"), type: "switch" },
                 { name: "active_flag", label: labels("active"), type: "switch" },
-                { name: "notes", label: labels("notes"), type: "textarea" },
+                { name: "notes", label: labels("notes"), type: "textarea", max: 400 }, // 25-11-2026 FIX: max
               ]}
             />
           </Tabs.TabPane>

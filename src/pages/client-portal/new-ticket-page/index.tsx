@@ -29,10 +29,11 @@ const ClientNewTicketPage = () => {
   const context = useMemo(() => {
     const search = new URLSearchParams(location.search);
     return {
-      ctx_page_name: search.get("page") || "",
-      ctx_user_name: search.get("user") || "",
-      ctx_staff_id: search.get("staff") || "",
-      ctx_error: search.get("error") || "",
+      // 25-11-2026 FIX: cut to the server sizes (OLD: no cut - a longer value was saved EMPTY)
+      ctx_page_name: (search.get("page") || "").slice(0, 200),
+      ctx_user_name: (search.get("user") || "").slice(0, 30),
+      ctx_staff_id: (search.get("staff") || "").slice(0, 10),
+      ctx_error: (search.get("error") || "").slice(0, 2000),
     };
   }, [location.search]);
 
@@ -47,9 +48,18 @@ const ClientNewTicketPage = () => {
   const onSubmit = useCallback(async () => {
     setError("");
 
+    // 25-11-2026 FIX (review)
+    //   OLD    : ...form only - branch_id = user.branch_id (empty for a client manager)
+    //   NEW    : a client manager whose client has ONE branch sends that branch
+    //   REASON : the branch select shows only for 2+ branches, so a client manager of a
+    //            one-branch client sent no branch and the server answered "branch is required"
+    //   BENEFIT: every client manager can open a ticket
+    const onlyBranch =
+      lookups.branches.length === 1 ? Number(lookups.branches[0].key) : undefined;
     const { apiValues, error: apiError } = await mutate({
       record_status: "n",
       ...form,
+      branch_id: form.branch_id || onlyBranch,
       ...context,
     });
 
@@ -65,7 +75,7 @@ const ClientNewTicketPage = () => {
         ? `/portal/tickets/${created.ticket_id}`
         : PAGES_PATH_NAMES.clientMyTickets,
     );
-  }, [mutate, form, context, labels, navigate]);
+  }, [mutate, form, context, labels, navigate, lookups.branches]);
 
   // a client user tied to one branch does not choose a branch
   const branches = lookups.branches;
@@ -185,6 +195,8 @@ const ClientNewTicketPage = () => {
           <Form.Item label={labels("description")} required>
             <Input.TextArea
               rows={5}
+              maxLength={4000} /* 25-11-2026 FIX: longer text was replaced by the title */
+              showCount
               value={form.description || ""}
               onChange={(event) =>
                 setForm({ ...form, description: event.target.value })
@@ -195,6 +207,7 @@ const ClientNewTicketPage = () => {
           <Form.Item label={labels("expectedResult")}>
             <Input.TextArea
               rows={2}
+              maxLength={2000} /* 25-11-2026 FIX: longer text was saved empty */
               value={form.expected_result || ""}
               onChange={(event) =>
                 setForm({ ...form, expected_result: event.target.value })
@@ -205,6 +218,7 @@ const ClientNewTicketPage = () => {
           <Form.Item label={labels("actualResult")}>
             <Input.TextArea
               rows={2}
+              maxLength={2000} /* 25-11-2026 FIX: longer text was saved empty */
               value={form.actual_result || ""}
               onChange={(event) =>
                 setForm({ ...form, actual_result: event.target.value })

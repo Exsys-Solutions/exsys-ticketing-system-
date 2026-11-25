@@ -207,6 +207,7 @@ function SetupGrid<T extends { [key: string]: any }>({
       return (
         <Input.TextArea
           rows={4}
+          maxLength={field.max} /* 25-11-2026 FIX: OLD: max was used by the one-line input only */
           placeholder={field.label}
           value={value || ""}
           onChange={(event) => set(event.target.value)}

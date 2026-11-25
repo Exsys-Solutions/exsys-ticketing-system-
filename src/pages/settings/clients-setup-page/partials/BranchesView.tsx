@@ -124,6 +124,7 @@ const BranchesView = ({ clientId, branches, branchTypes, onReload }: Props) => {
             <Input
               style={{ marginBottom: 10 }}
               placeholder={labels("nameEn")}
+              maxLength={100} /* 25-11-2026 FIX: server size */
               value={editing.description_p || ""}
               onChange={(event) =>
                 setEditing({ ...editing, description_p: event.target.value })
@@ -132,6 +133,7 @@ const BranchesView = ({ clientId, branches, branchTypes, onReload }: Props) => {
             <Input
               style={{ marginBottom: 10 }}
               placeholder={labels("nameAr")}
+              maxLength={100} /* 25-11-2026 FIX: server size */
               value={editing.description_s || ""}
               onChange={(event) =>
                 setEditing({ ...editing, description_s: event.target.value })
@@ -153,6 +155,7 @@ const BranchesView = ({ clientId, branches, branchTypes, onReload }: Props) => {
             </Select>
             <Input
               placeholder={labels("city")}
+              maxLength={50} /* 25-11-2026 FIX: server size */
               value={editing.city || ""}
               onChange={(event) =>
                 setEditing({ ...editing, city: event.target.value })

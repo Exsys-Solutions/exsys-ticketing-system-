@@ -315,6 +315,7 @@ const UsersSetupPage = () => {
             <Flex gap={10}>
               <Input
                 placeholder={labels("nameEn")}
+                maxLength={100} /* 25-11-2026 FIX: server size */
                 value={editing.full_name_p || ""}
                 onChange={(event) =>
                   setEditing({ ...editing, full_name_p: event.target.value })
@@ -322,6 +323,7 @@ const UsersSetupPage = () => {
               />
               <Input
                 placeholder={labels("nameAr")}
+                maxLength={100} /* 25-11-2026 FIX: server size */
                 value={editing.full_name_s || ""}
                 onChange={(event) =>
                   setEditing({ ...editing, full_name_s: event.target.value })
@@ -332,6 +334,7 @@ const UsersSetupPage = () => {
             <Flex gap={10}>
               <Input
                 placeholder={labels("email")}
+                maxLength={100} /* 25-11-2026 FIX: server size */
                 value={editing.email || ""}
                 onChange={(event) =>
                   setEditing({ ...editing, email: event.target.value })
@@ -339,6 +342,7 @@ const UsersSetupPage = () => {
               />
               <Input
                 placeholder={labels("mobile")}
+                maxLength={20} /* 25-11-2026 FIX: server size */
                 value={editing.mobile || ""}
                 onChange={(event) =>
                   setEditing({ ...editing, mobile: event.target.value })
@@ -475,6 +479,7 @@ const UsersSetupPage = () => {
               <Flex gap={10}>
                 <Input
                   placeholder={labels("exsysUserName")}
+                  maxLength={30} /* 25-11-2026 FIX: server size */
                   value={editing.exsys_user_name || ""}
                   onChange={(event) =>
                     setEditing({
@@ -485,6 +490,7 @@ const UsersSetupPage = () => {
                 />
                 <Input
                   placeholder={labels("staffId")}
+                  maxLength={10} /* 25-11-2026 FIX: server size */
                   value={editing.staff_id || ""}
                   onChange={(event) =>
                     setEditing({ ...editing, staff_id: event.target.value })

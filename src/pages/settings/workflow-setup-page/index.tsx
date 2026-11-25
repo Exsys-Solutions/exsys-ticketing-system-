@@ -407,7 +407,7 @@ const WorkflowSetupPage = () => {
               newDefaults={{ active_flag: "Y" }}
               fields={[
                 { name: "title", label: labels("title"), type: "text", max: 100 },
-                { name: "body", label: labels("body"), type: "textarea" },
+                { name: "body", label: labels("body"), type: "textarea", max: 2000 }, // 25-11-2026 FIX: max
                 {
                   name: "team_id",
                   label: labels("team"),

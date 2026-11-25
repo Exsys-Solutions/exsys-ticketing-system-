@@ -161,6 +161,7 @@ const ConversationView = ({
           ) : null}
 
           <textarea
+            maxLength={4000} /* 25-11-2026 FIX: the server size of a message */
             value={body}
             onChange={(event) => setBody(event.target.value)}
             rows={4}
